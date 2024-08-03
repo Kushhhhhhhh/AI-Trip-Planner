@@ -37,7 +37,7 @@ const CreateTrip = () => {
     onSuccess: (tokenResponse) => {
       console.log("Login successful:", tokenResponse);
       toast.success("Login successful");
-      GetUserProfile(tokenResponse); 
+      GetUserProfile(tokenResponse);
     },
     onError: (error) => {
       console.error("Login error:", error);
@@ -45,37 +45,37 @@ const CreateTrip = () => {
   });
 
   const GenerateTrip = async () => {
-    const user = localStorage.getItem("user");
-  
+    const user = JSON.parse(localStorage.getItem("user"));
+
     if (!user) {
       toast.error("Please login to generate a trip");
       setOpenDialog(true);
       return;
     }
-  
+
     console.log("Form data on generate:", formData);
-  
+
     if (!formData.location || !formData.stay || !formData.budget || !formData.travel) {
       toast.error("Please fill all the required fields");
       return;
     }
-  
+
     setLoading(true);
-  
+
     const toastId = toast.loading("Please wait while we generate your trip");
-  
+
     const finalPrompt = AI_PROMPT
       .replace('{location}', formData.location.label)
       .replace('{stay}', formData.stay)
       .replace('{travel}', formData.travel)
       .replace('{budget}', formData.budget);
-  
+
     try {
       const result = await chatSession.sendMessage(finalPrompt);
       console.log("AI Response:", result?.response?.text());
-  
+
       await SaveTrip(result?.response?.text());
-  
+
       toast.dismiss(toastId);
       toast.success("Trip generated successfully!");
       
@@ -91,7 +91,7 @@ const CreateTrip = () => {
 
   const GetUserProfile = async (tokenInfo) => {
     try {
-      const response = await axios.get(`https:/www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`, {
+      const response = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`, {
         headers: {
           Authorization: `Bearer ${tokenInfo?.access_token}`,
           Accept: 'application/json'
@@ -104,13 +104,20 @@ const CreateTrip = () => {
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
-  }
+  };
 
   const SaveTrip = async (tripData) => {
     setLoading(true);
     const docId = Date.now().toString();
     const user = JSON.parse(localStorage.getItem("user"));
-  
+
+    if (!user?.email) {
+      console.error("User email is missing.");
+      toast.error("User email is missing. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
     let parsedTripData;
     try {
       parsedTripData = JSON.parse(tripData);
@@ -120,16 +127,22 @@ const CreateTrip = () => {
       setLoading(false);
       return;
     }
-  
-    await setDoc(doc(db, "AI_Trip", docId), {
-      userSelection: formData,
-      trip: parsedTripData,
-      userEmail: user?.email,
-      id: docId
-    });
-  
-    setLoading(false);
-    router(`/view-trip/${docId}`);
+
+    try {
+      await setDoc(doc(db, "AI_Trip", docId), {
+        userSelection: formData,
+        trip: parsedTripData,
+        userEmail: user.email,
+        id: docId
+      });
+      toast.success("Trip saved successfully!");
+      router(`/view-trip/${docId}`);
+    } catch (error) {
+      console.error("Error saving trip:", error);
+      toast.error("Failed to save trip. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

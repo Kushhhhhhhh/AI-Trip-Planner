@@ -4,14 +4,14 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import { googleLogout } from "@react-oauth/google";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -25,32 +25,32 @@ const Header = () => {
 
   const GetUserProfile = async (tokenInfo) => {
     try {
-      const response = await axios.get(`https:/www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`, {
+      const response = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`, {
         headers: {
           Authorization: `Bearer ${tokenInfo?.access_token}`,
-          Accept: 'application/json'
-        }
+          Accept: 'application/json',
+        },
       });
       console.log("User profile:", response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
       setOpenDialog(false);
-      window.location.reload();
+      setUser(response.data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
-  }
+  };
 
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       console.log("Login successful:", tokenResponse);
       toast.success("Login successful");
-      GetUserProfile(tokenResponse); 
+      GetUserProfile(tokenResponse);
     },
     onError: (error) => {
       console.error("Login error:", error);
+      toast.error("Login error. Please try again.");
     },
   });
- 
 
   useEffect(() => {
     try {
@@ -61,26 +61,33 @@ const Header = () => {
     }
   }, []);
 
+  const handleLogout = () => {
+    googleLogout();
+    localStorage.clear();
+    setUser(null);
+    toast.success("Logged out successfully");
+  };
+
   return (
     <div className="p-4 shadow-sm flex justify-between items-center px-5 mb-4">
       <div className="flex items-center space-x-3">
         <a href="/" className="flex gap-3">
-        <img
-          src="/ai-trip-planner.png"
-          alt="logo"
-          className="h-10 w-10 rounded-xl"
-        />
-        <span className="font-bold text-2xl hidden md:block">AI Trip Planner</span>
+          <img
+            src="/ai-trip-planner.png"
+            alt="logo"
+            className="h-10 w-10 rounded-xl"
+          />
+          <span className="font-bold text-2xl hidden md:block">AI Trip Planner</span>
         </a>
       </div>
       <div>
         {user ? (
           <div className="flex items-center space-x-2">
             <a href="/create-trip">
-            <Button variant="outline" className="rounded-full">Create Trip</Button>
+              <Button variant="outline" className="rounded-full">Create Trip</Button>
             </a>
             <a href="/my-trips">
-            <Button variant="outline" className="rounded-full">My Trips</Button>
+              <Button variant="outline" className="rounded-full">My Trips</Button>
             </a>
             <Popover>
               <PopoverTrigger>
@@ -93,14 +100,9 @@ const Header = () => {
                 )}
               </PopoverTrigger>
               <PopoverContent>
-                <h2 className="cursor-pointer" onClick={() => {
-                  googleLogout();
-                  localStorage.clear();
-                  window.location.reload();
-                }}>Logout</h2>
+                <h2 className="cursor-pointer" onClick={handleLogout}>Logout</h2>
               </PopoverContent>
             </Popover>
-
           </div>
         ) : (
           <Button onClick={() => setOpenDialog(true)}>
@@ -108,7 +110,7 @@ const Header = () => {
           </Button>
         )}
       </div>
-      <Dialog open={openDialog}>
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogDescription>
