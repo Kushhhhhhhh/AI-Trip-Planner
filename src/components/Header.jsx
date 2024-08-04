@@ -1,32 +1,16 @@
 import { Button } from "./ui/button";
 import { useEffect, useState } from 'react';
-import { db } from "../config/firebase-config";
-import { doc, getDoc } from "firebase/firestore";
 
 const Header = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userData = JSON.parse(localStorage.getItem("user"));
-        if (userData && userData.email) {
-          const userRef = doc(db, "users", userData.email);
-          const userDoc = await getDoc(userRef);
+    const user = localStorage.getItem("user");
+    if (user) {
+      setUser(JSON.parse(user));
+    }
 
-          if (userDoc.exists()) {
-            setUser(userDoc.data());
-          } else {
-            console.log("No such document!");
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
+  }, [user, setUser]);
 
   return (
     <div className="p-4 shadow-sm flex justify-between items-center px-5 mb-4">

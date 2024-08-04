@@ -6,16 +6,24 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { AI_PROMPT } from "@/data/option";
 import { chatSession } from "@/config/ai-model";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { setDoc, doc } from "firebase/firestore";
+import { db } from "@/config/firebase-config";
 import { useNavigate } from "react-router-dom";
-import { db } from "../config/firebase-config"; 
-import { collection, addDoc } from "firebase/firestore";
 
 const CreateTrip = () => {
   const [place, setPlace] = useState(null);
   const [formData, setFormData] = useState({});
+  const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const router = useNavigate();
 
   const handleInputChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -23,6 +31,14 @@ const CreateTrip = () => {
   };
 
   const GenerateTrip = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      toast.error("Please login to generate a trip");
+      setOpenDialog(true);
+      return;
+    }
+
     console.log("Form data on generate:", formData);
 
     if (!formData.location || !formData.stay || !formData.budget || !formData.travel) {
@@ -31,6 +47,7 @@ const CreateTrip = () => {
     }
 
     setLoading(true);
+
     const toastId = toast.loading("Please wait while we generate your trip");
 
     const finalPrompt = AI_PROMPT
@@ -47,9 +64,10 @@ const CreateTrip = () => {
 
       toast.dismiss(toastId);
       toast.success("Trip generated successfully!");
-
+      
     } catch (error) {
       console.error("Error generating trip:", error);
+      
       toast.dismiss(toastId);
       toast.error("An error occurred while generating the trip");
     } finally {
@@ -60,6 +78,14 @@ const CreateTrip = () => {
   const SaveTrip = async (tripData) => {
     setLoading(true);
     const docId = Date.now().toString();
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user?.email) {
+      console.error("User email is missing.");
+      toast.error("User email is missing. Please log in again.");
+      setLoading(false);
+      return;
+    }
 
     let parsedTripData;
     try {
@@ -72,15 +98,14 @@ const CreateTrip = () => {
     }
 
     try {
-      // Save trip data to Firestore
-      await addDoc(collection(db, "AI_Trip"), {
+      await setDoc(doc(db, "AI_Trip", docId), {
         userSelection: formData,
         trip: parsedTripData,
-        id: docId,
-        createdAt: new Date()
+        userEmail: user.email,
+        id: docId
       });
       toast.success("Trip saved successfully!");
-      navigate(`/view-trip/${docId}`);
+      router(`/view-trip/${docId}`);
     } catch (error) {
       console.error("Error saving trip:", error);
       toast.error("Failed to save trip. Please try again.");
@@ -154,6 +179,26 @@ const CreateTrip = () => {
               {loading ? <AiOutlineLoading3Quarters className="w-5 h-5 animate-spin" /> : "Generate Trip"}
             </Button>
           </div>
+          <Dialog open={openDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogDescription>
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src="/ai-trip-planner.png"
+                      alt="logo"
+                      className="h-10 w-10 rounded-xl shadow-lg"
+                    />
+                    <span className="font-bold text-xl sm:text-3xl">AI Trip Planner</span>
+                  </div>
+                  <div className="my-6 text-center">
+                    <DialogTitle className="font-bold">Sign In Required</DialogTitle>
+                    <p>Please log in to continue</p>
+                  </div>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>
