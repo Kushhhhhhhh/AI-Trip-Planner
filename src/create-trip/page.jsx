@@ -8,12 +8,14 @@ import { AI_PROMPT } from "@/data/option";
 import { chatSession } from "@/config/ai-model";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
+import { db } from "../config/firebase-config"; 
+import { collection, addDoc } from "firebase/firestore";
 
 const CreateTrip = () => {
   const [place, setPlace] = useState(null);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
-  const router = useNavigate();
+  const navigate = useNavigate();
 
   const handleInputChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -55,7 +57,7 @@ const CreateTrip = () => {
     }
   };
 
-  const SaveTrip = (tripData) => {
+  const SaveTrip = async (tripData) => {
     setLoading(true);
     const docId = Date.now().toString();
 
@@ -70,14 +72,15 @@ const CreateTrip = () => {
     }
 
     try {
-      // Save trip data to local storage
-      localStorage.setItem(`trip-${docId}`, JSON.stringify({
+      // Save trip data to Firestore
+      await addDoc(collection(db, "AI_Trip"), {
         userSelection: formData,
         trip: parsedTripData,
-        id: docId
-      }));
+        id: docId,
+        createdAt: new Date()
+      });
       toast.success("Trip saved successfully!");
-      router(`/view-trip/${docId}`);
+      navigate(`/view-trip/${docId}`);
     } catch (error) {
       console.error("Error saving trip:", error);
       toast.error("Failed to save trip. Please try again.");

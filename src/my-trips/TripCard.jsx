@@ -16,6 +16,8 @@ function TripCard({ trip }) {
           } else {
             setPhotoUrl('/view-trip.jpg'); 
           }
+        } else {
+          setPhotoUrl('/view-trip.jpg'); 
         }
       } catch (error) {
         console.error("Error fetching photo:", error);
@@ -28,7 +30,11 @@ function TripCard({ trip }) {
   return (
     <Link to={`/view-trip/${trip?.id}`}>
       <div className="bg-white p-4 rounded-lg shadow-md hover:scale-105 transition-all cursor-pointer">
-        <img src={photoUrl} alt={`Trip to ${trip?.userSelection?.location?.label || 'Destination'}`} className="w-full object-cover rounded-xl h-[200px] sm:h-[250px]" />
+        <img
+          src={photoUrl}
+          alt={`Trip to ${trip?.userSelection?.location?.label || 'Destination'}`}
+          className="w-full object-cover rounded-xl h-[200px] sm:h-[250px]"
+        />
         <div className="mt-4">
           <h2 className="text-base sm:text-lg font-semibold">
             {trip?.userSelection?.location?.label || 'Unknown Location'}
