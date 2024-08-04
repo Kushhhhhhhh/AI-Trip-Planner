@@ -7,8 +7,6 @@ import toast from "react-hot-toast";
 import { AI_PROMPT } from "@/data/option";
 import { chatSession } from "@/config/ai-model";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { setDoc, doc } from "firebase/firestore";
-import { db } from "@/config/firebase-config";
 import { useNavigate } from "react-router-dom";
 
 const CreateTrip = () => {
@@ -23,7 +21,6 @@ const CreateTrip = () => {
   };
 
   const GenerateTrip = async () => {
-
     console.log("Form data on generate:", formData);
 
     if (!formData.location || !formData.stay || !formData.budget || !formData.travel) {
@@ -32,7 +29,6 @@ const CreateTrip = () => {
     }
 
     setLoading(true);
-
     const toastId = toast.loading("Please wait while we generate your trip");
 
     const finalPrompt = AI_PROMPT
@@ -49,10 +45,9 @@ const CreateTrip = () => {
 
       toast.dismiss(toastId);
       toast.success("Trip generated successfully!");
-      
+
     } catch (error) {
       console.error("Error generating trip:", error);
-      
       toast.dismiss(toastId);
       toast.error("An error occurred while generating the trip");
     } finally {
@@ -60,17 +55,9 @@ const CreateTrip = () => {
     }
   };
 
-  const SaveTrip = async (tripData) => {
+  const SaveTrip = (tripData) => {
     setLoading(true);
     const docId = Date.now().toString();
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!user?.email) {
-      console.error("User email is missing.");
-      toast.error("User email is missing. Please log in again.");
-      setLoading(false);
-      return;
-    }
 
     let parsedTripData;
     try {
@@ -83,12 +70,12 @@ const CreateTrip = () => {
     }
 
     try {
-      await setDoc(doc(db, "AI_Trip", docId), {
+      // Save trip data to local storage
+      localStorage.setItem(`trip-${docId}`, JSON.stringify({
         userSelection: formData,
         trip: parsedTripData,
-        userEmail: user.email,
         id: docId
-      });
+      }));
       toast.success("Trip saved successfully!");
       router(`/view-trip/${docId}`);
     } catch (error) {
