@@ -10,11 +10,11 @@
 
 🔮 Gemini and Unsplash API Integration
 
-🎒 AI Trip Generation with Hotel Booking
+🎒 AI Trip Generation with User Prefernces
 
 📍 Map Integration: Google Cloud Console Map APIs
 
-🔐 Authentication & Authorization with Google Cloud Console OAuth.
+🔐 Authentication & Authorization with Firebase
 
 🎨 Customizable Components: Built with ShadCN for a beautiful, minimalist design.
 
@@ -52,7 +52,7 @@
     ```
 
 4. Set up environment variables:
-    Create a `.env` file in the root directory and add the necessary environment variables like Firebase , Google Cloud Console OAuth Key and Gemini API Key, Unsplash API Key.
+    Create a `.env` file in the root directory and add the necessary environment variables like Firebase , Gemini API Key, Unsplash API Key.
 
 5. Run the development server:
     ```bash
