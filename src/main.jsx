@@ -1,47 +1,70 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import CreateTrip from './create-trip/page.jsx'
-import ViewTrip from './view-trip/[tripId]/page.jsx'
-import MyTrips from './my-trips/page.jsx'
-import Header from './components/Header.jsx'
-import { Toaster } from 'react-hot-toast'
-import SignUp from './components/SignUp.jsx'
-import SignIn from './components/SignIn.jsx'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Layout from './Layout.jsx';
+import App from './App.jsx';
+import CreateTrip from './create-trip/page.jsx';
+import ViewTrip from './view-trip/[tripId]/page.jsx';
+import MyTrips from './my-trips/page.jsx';
+import SignUp from './components/SignUp.jsx';
+import SignIn from './components/SignIn.jsx';
+import './index.css';
+import { Toaster } from 'react-hot-toast';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: (
+      <Layout>
+        <App />
+      </Layout>
+    ),
   },
   {
     path: '/create-trip',
-    element: <CreateTrip />
+    element: (
+      <Layout>
+        <CreateTrip />
+      </Layout>
+    ),
   },
   {
     path: '/view-trip/:tripId',
-    element: <ViewTrip />
+    element: (
+      <Layout>
+        <ViewTrip />
+      </Layout>
+    ),
   },
   {
-    path: 'my-trips',
-    element: <MyTrips />
+    path: '/my-trips',
+    element: (
+      <Layout>
+        <MyTrips />
+      </Layout>
+    ),
   },
   {
-    path: 'sign-up',
-    element: <SignUp />
+    path: '/sign-up',
+    element: (
+      <Layout>
+        <SignUp />
+      </Layout>
+    ),
   },
   {
-    path: 'sign-in',
-    element: <SignIn />
-  }
-])
+    path: '/sign-in',
+    element: (
+      <Layout>
+        <SignIn />
+      </Layout>
+    ),
+  },
+]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-      <Header />
-      <Toaster />
-      <RouterProvider router={router} />
+    <Toaster />
+    <RouterProvider router={router} />
   </React.StrictMode>
-)
+);
