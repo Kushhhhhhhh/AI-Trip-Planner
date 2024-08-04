@@ -14,7 +14,11 @@
 
 📍 Map Integration: Google Cloud Console Map APIs
 
+<<<<<<< HEAD
 🔐 Authentication & Authorization with Firebase
+=======
+🔐 Authentication & Authorization with Firebase 
+>>>>>>> 58f8b2d29829574abce6ee557d8a3f99e541ee15
 
 🎨 Customizable Components: Built with ShadCN for a beautiful, minimalist design.
 
