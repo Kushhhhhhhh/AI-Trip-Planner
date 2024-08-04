@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { searchPhotos } from '../config/unsplash-api';
 
 function TripCard({ trip }) {
-  const [photoUrl, setPhotoUrl] = useState('/view-trip.jpg'); // Default image
+  const [photoUrl, setPhotoUrl] = useState('/view-trip.jpg'); 
 
   useEffect(() => {
     const fetchPhoto = async () => {
       if (trip?.userSelection?.location?.label) {
         const results = await searchPhotos(trip.userSelection.location.label);
         if (results.length > 0) {
-          setPhotoUrl(results[0].urls.regular); // Use a higher resolution image
+          setPhotoUrl(results[0].urls.regular); 
         }
       }
     };

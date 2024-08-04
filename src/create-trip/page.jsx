@@ -13,12 +13,9 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { FcGoogle } from "react-icons/fc";
-import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { setDoc, doc } from "firebase/firestore";
 import { db } from "@/config/firebase-config";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 
 const CreateTrip = () => {
@@ -32,17 +29,6 @@ const CreateTrip = () => {
     setFormData({ ...formData, [name]: value });
     console.log(`Form data updated: ${name} = ${value}`);
   };
-
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      console.log("Login successful:", tokenResponse);
-      toast.success("Login successful");
-      GetUserProfile(tokenResponse);
-    },
-    onError: (error) => {
-      console.error("Login error:", error);
-    },
-  });
 
   const GenerateTrip = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -86,23 +72,6 @@ const CreateTrip = () => {
       toast.error("An error occurred while generating the trip");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const GetUserProfile = async (tokenInfo) => {
-    try {
-      const response = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`, {
-        headers: {
-          Authorization: `Bearer ${tokenInfo?.access_token}`,
-          Accept: 'application/json'
-        }
-      });
-      console.log("User profile:", response.data);
-      localStorage.setItem("user", JSON.stringify(response.data));
-      setOpenDialog(false);
-      GenerateTrip();
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
     }
   };
 
@@ -223,16 +192,9 @@ const CreateTrip = () => {
                     <span className="font-bold text-xl sm:text-3xl">AI Trip Planner</span>
                   </div>
                   <div className="my-6 text-center">
-                    <DialogTitle className="font-bold">Sign In with Google</DialogTitle>
-                    <p>Please sign in to continue</p>
+                    <DialogTitle className="font-bold">Sign In Required</DialogTitle>
+                    <p>Please log in to continue</p>
                   </div>
-                  <Button
-                    onClick={login}
-                    className="mt-5 w-full flex gap-4 items-center"
-                    disabled={loading}
-                  >
-                    Sign In with Google <FcGoogle className="ml-2 mt-1 w-4 h-4" />
-                  </Button>
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>

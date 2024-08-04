@@ -8,7 +8,7 @@ import ViewTrip from './view-trip/[tripId]/page.jsx'
 import MyTrips from './my-trips/page.jsx'
 import Header from './components/Header.jsx'
 import { Toaster } from 'react-hot-toast'
-import { GoogleOAuthProvider } from '@react-oauth/google'
+// import { GoogleOAuthProvider } from '@react-oauth/google'
 
 const router = createBrowserRouter([
   {
@@ -31,10 +31,10 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOOGLE_AUTH_CLIENT_ID}>
+    {/* <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOOGLE_AUTH_CLIENT_ID}> */}
       <Header />
       <Toaster />
       <RouterProvider router={router} />
-    </GoogleOAuthProvider>
+    {/* </GoogleOAuthProvider> */}
   </React.StrictMode>
 )
