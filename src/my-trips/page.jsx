@@ -9,10 +9,10 @@ const MyTrips = () => {
   const [userTrips, setUserTrips] = useState([]);
 
   useEffect(() => {
-    GetUserTrips();
+    GetTrips();
   }, []); 
 
-  const GetUserTrips = async () => {
+  const GetTrips = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user) {
@@ -20,14 +20,41 @@ const MyTrips = () => {
       return;
     }
 
-    const q = query(collection(db, "AI_Trip"), where("userEmail", "==", user?.email));
+    // Fetch trips from Firebase
+    const firebaseTrips = await fetchFirebaseTrips(user.email);
+
+    // Fetch trips from Local Storage
+    const localStorageTrips = fetchLocalStorageTrips();
+
+    // Combine both trips
+    const combinedTrips = [...firebaseTrips, ...localStorageTrips];
+
+    setUserTrips(combinedTrips);
+  };
+
+  const fetchFirebaseTrips = async (email) => {
+    const q = query(collection(db, "AI_Trip"), where("userEmail", "==", email));
     const querySnapshot = await getDocs(q);
 
     const trips = [];
     querySnapshot.forEach((doc) => {
       trips.push(doc.data());
     });
-    setUserTrips(trips);
+    return trips;
+  };
+
+  const fetchLocalStorageTrips = () => {
+    const trips = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("trip-")) {
+        const tripData = localStorage.getItem(key);
+        if (tripData) {
+          trips.push(JSON.parse(tripData));
+        }
+      }
+    }
+    return trips;
   };
 
   return (
