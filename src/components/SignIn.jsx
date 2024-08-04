@@ -3,20 +3,45 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase-config';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start the loader
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('User signed in successfully!');
-      router('/');
+      navigate('/');
     } catch (error) {
       console.error('Error signing in:', error.message);
+      handleAuthError(error.code);
+    } finally {
+      setLoading(false); // Stop the loader
+    }
+  };
+
+  const handleAuthError = (errorCode) => {
+    switch (errorCode) {
+      case 'auth/user-not-found':
+        toast.error('No account found with this email. Please sign up first.');
+        break;
+      case 'auth/wrong-password':
+        toast.error('Incorrect password. Please try again.');
+        break;
+      case 'auth/invalid-email':
+        toast.error('Invalid email address format. Please check your email.');
+        break;
+      case 'auth/network-request-failed':
+        toast.error('Network error. Please check your connection and try again.');
+        break;
+      default:
+        toast.error('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -49,12 +74,19 @@ const SignIn = () => {
               required
             />
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Sign In
-          </button>
+          {loading ? (
+            <div className="flex justify-center">
+              <Loader2 className="w-5 h-5 animate-spin" />
+            </div>
+          ) : (
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              disabled={!email || !password}
+            >
+              Sign In
+            </button>
+          )}
         </form>
       </div>
     </main>

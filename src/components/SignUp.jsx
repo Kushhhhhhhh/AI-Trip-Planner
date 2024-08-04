@@ -3,20 +3,45 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase-config';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success('User signed up successfully!');
-      router('/sign-in');
+      navigate('/sign-in');
     } catch (error) {
       console.error('Error signing up:', error.message);
+      handleAuthError(error.code);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAuthError = (errorCode) => {
+    switch (errorCode) {
+      case 'auth/email-already-in-use':
+        toast.error('This email is already in use. Please sign in.');
+        break;
+      case 'auth/invalid-email':
+        toast.error('Invalid email address format. Please check your email.');
+        break;
+      case 'auth/weak-password':
+        toast.error('Password should be at least 6 characters.');
+        break;
+      case 'auth/network-request-failed':
+        toast.error('Network error. Please check your connection and try again.');
+        break;
+      default:
+        toast.error('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -49,12 +74,17 @@ const SignUp = () => {
               required
             />
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Sign Up
-          </button>
+          {loading ? (
+            <Loader2 className="w-5 h-5 mx-auto animate-spin" />
+          ) : (
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              disabled={!email || !password}
+            >
+              Sign Up
+            </button>
+          )}
         </form>
       </div>
     </main>
