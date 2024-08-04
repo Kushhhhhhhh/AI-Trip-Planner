@@ -41,20 +41,6 @@ const Header = () => {
         </a>
       </div>
       <div className="flex items-center space-x-4">
-        <div>
-          {user ? (
-            <div className="flex items-center space-x-2">
-              <img
-                src={user.picture || "/default-profile.png"}
-                alt={user.name || "User"}
-                className="h-10 w-10 rounded-full"
-              />
-              <span className="font-medium">{user.name || "User"}</span>
-            </div>
-          ) : (
-            <span className="font-medium">Guest</span>
-          )}
-        </div>
         <div className="flex items-center space-x-2">
           <a href="/create-trip">
             <Button variant="outline" className="rounded-full">Create Trip</Button>
