@@ -1,5 +1,5 @@
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { SelectBudgetOptions, SelectTravelList } from "@/data/option";
 import { Button } from "@/components/ui/button";
@@ -15,40 +15,44 @@ import {
 } from "@/components/ui/dialog";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { setDoc, doc } from "firebase/firestore";
-import { db } from "@/config/firebase-config";
+import { db, auth } from "@/config/firebase-config";
 import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 const CreateTrip = () => {
   const [place, setPlace] = useState(null);
   const [formData, setFormData] = useState({});
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useNavigate();
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleInputChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
-    console.log(`Form data updated: ${name} = ${value}`);
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const GenerateTrip = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-
+  const generateTrip = async () => {
     if (!user) {
-      toast.error("Please login to generate a trip");
+      toast.error("Please log in to generate a trip.");
       setOpenDialog(true);
       return;
     }
 
-    console.log("Form data on generate:", formData);
-
     if (!formData.location || !formData.stay || !formData.budget || !formData.travel) {
-      toast.error("Please fill all the required fields");
+      toast.error("Please fill out all required fields.");
       return;
     }
 
     setLoading(true);
-
-    const toastId = toast.loading("Please wait while we generate your trip");
+    const toastId = toast.loading("Generating your trip...");
 
     const finalPrompt = AI_PROMPT
       .replace('{location}', formData.location.label)
@@ -58,27 +62,26 @@ const CreateTrip = () => {
 
     try {
       const result = await chatSession.sendMessage(finalPrompt);
-      console.log("AI Response:", result?.response?.text());
+      const tripData = result?.response?.text();
 
-      await SaveTrip(result?.response?.text());
+      if (tripData) {
+        await saveTrip(tripData);
+        toast.success("Trip generated and saved successfully!");
+      } else {
+        throw new Error("No trip data received.");
+      }
 
-      toast.dismiss(toastId);
-      toast.success("Trip generated successfully!");
-      
     } catch (error) {
       console.error("Error generating trip:", error);
-      
-      toast.dismiss(toastId);
-      toast.error("An error occurred while generating the trip");
+      toast.error("An error occurred while generating the trip.");
     } finally {
+      toast.dismiss(toastId);
       setLoading(false);
     }
   };
 
-  const SaveTrip = async (tripData) => {
-    setLoading(true);
+  const saveTrip = async (tripData) => {
     const docId = Date.now().toString();
-    const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user?.email) {
       console.error("User email is missing.");
@@ -88,11 +91,12 @@ const CreateTrip = () => {
     }
 
     let parsedTripData;
+
     try {
       parsedTripData = JSON.parse(tripData);
     } catch (error) {
       console.error("Invalid JSON in tripData:", error);
-      toast.error("Failed to save trip data. Please try again.");
+      toast.error("Please try again with different options.");
       setLoading(false);
       return;
     }
@@ -104,8 +108,7 @@ const CreateTrip = () => {
         userEmail: user.email,
         id: docId
       });
-      toast.success("Trip saved successfully!");
-      router(`/view-trip/${docId}`);
+      navigate(`/view-trip/${docId}`);
     } catch (error) {
       console.error("Error saving trip:", error);
       toast.error("Failed to save trip. Please try again.");
@@ -114,11 +117,26 @@ const CreateTrip = () => {
     }
   };
 
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await signOut(auth);
+      setUser(null);
+      toast.success("Logged out successfully.");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Failed to log out. Please try again.");
+    } finally {
+      setLoading(false);
+      setOpenDialog(false);
+    }
+  };
+
   return (
     <div className="px-5 sm:px-10 md:px-32 lg:px-56 xl:px-72 mt-10">
       <h2 className="font-bold text-2xl sm:text-3xl">Tell us your travel preference 🏕️</h2>
       <p className="mt-3 text-gray-600 text-sm sm:text-base">
-        Please provide some basic information and our trip planner will generate a customized itinerary based on your preferences
+        Please provide some basic information and our trip planner will generate a customized itinerary based on your preferences.
       </p>
 
       <div className="mt-10 sm:mt-20 flex flex-col gap-10">
@@ -175,11 +193,11 @@ const CreateTrip = () => {
             ))}
           </div>
           <div className="my-10 justify-end flex">
-            <Button onClick={GenerateTrip} disabled={loading}>
+            <Button onClick={generateTrip} disabled={loading}>
               {loading ? <AiOutlineLoading3Quarters className="w-5 h-5 animate-spin" /> : "Generate Trip"}
             </Button>
           </div>
-          <Dialog open={openDialog}>
+          <Dialog open={openDialog} onOpenChange={() => setOpenDialog(false)}>
             <DialogContent>
               <DialogHeader>
                 <DialogDescription>
@@ -193,7 +211,20 @@ const CreateTrip = () => {
                   </div>
                   <div className="my-6 text-center">
                     <DialogTitle className="font-bold">Sign In Required</DialogTitle>
-                    <p>Please log in to continue</p>
+                    <p>Please log in to continue.</p>
+                    <div className="mt-6 flex justify-center space-x-4">
+                      <a href="/sign-in">
+                        <Button variant="outline">Sign In</Button>
+                      </a>
+                      <a href="/sign-up">
+                        <Button variant="outline">Sign Up</Button>
+                      </a>
+                      {user && (
+                        <Button variant="outline" onClick={handleLogout}>
+                          Logout
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </DialogDescription>
               </DialogHeader>
