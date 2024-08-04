@@ -10,7 +10,7 @@
 
 🔮 Gemini and Unsplash API Integration
 
-🎒 AI Trip Generation with Hotel Booking
+🎒 AI Trip Generation with User Preference
 
 📍 Map Integration: Google Cloud Console Map APIs
 
