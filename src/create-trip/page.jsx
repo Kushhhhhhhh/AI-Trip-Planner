@@ -6,13 +6,6 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { AI_PROMPT } from "@/data/option";
 import { chatSession } from "@/config/ai-model";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { setDoc, doc } from "firebase/firestore";
 import { db } from "@/config/firebase-config";
@@ -21,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 const CreateTrip = () => {
   const [place, setPlace] = useState(null);
   const [formData, setFormData] = useState({});
-  const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useNavigate();
 
@@ -31,13 +23,6 @@ const CreateTrip = () => {
   };
 
   const GenerateTrip = async () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!user) {
-      toast.error("Please login to generate a trip");
-      setOpenDialog(true);
-      return;
-    }
 
     console.log("Form data on generate:", formData);
 
@@ -179,26 +164,6 @@ const CreateTrip = () => {
               {loading ? <AiOutlineLoading3Quarters className="w-5 h-5 animate-spin" /> : "Generate Trip"}
             </Button>
           </div>
-          <Dialog open={openDialog}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogDescription>
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src="/ai-trip-planner.png"
-                      alt="logo"
-                      className="h-10 w-10 rounded-xl shadow-lg"
-                    />
-                    <span className="font-bold text-xl sm:text-3xl">AI Trip Planner</span>
-                  </div>
-                  <div className="my-6 text-center">
-                    <DialogTitle className="font-bold">Sign In Required</DialogTitle>
-                    <p>Please log in to continue</p>
-                  </div>
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </div>
