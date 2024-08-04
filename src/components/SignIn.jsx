@@ -13,7 +13,7 @@ const SignIn = () => {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start the loader
+    setLoading(true); 
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('User signed in successfully!');
@@ -22,7 +22,7 @@ const SignIn = () => {
       console.error('Error signing in:', error.message);
       handleAuthError(error.code);
     } finally {
-      setLoading(false); // Stop the loader
+      setLoading(false); 
     }
   };
 
