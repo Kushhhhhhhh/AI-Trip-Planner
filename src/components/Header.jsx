@@ -52,7 +52,6 @@ const Header = () => {
           </a>
         </div>
         <div className="flex items-center space-x-4">
-          {user ? (
             <div className="flex items-center space-x-4">
               <a href="/create-trip">
                 <Button variant="outline" className="rounded-full">Create Trip</Button>
@@ -60,8 +59,9 @@ const Header = () => {
               <a href="/my-trips">
                 <Button variant="outline" className="rounded-full">My Trips</Button>
               </a>
+              </div>
+          {user ? (
               <Button variant="outline" className="rounded-full" onClick={() => setOpenDialog(true)}>Logout</Button>
-            </div>
           ) : (
             <div className="flex items-center space-x-4">
               <a href="/sign-in">
